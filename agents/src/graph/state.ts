@@ -71,6 +71,10 @@ export const GraphState = Annotation.Root({
     reducer: (_prev, next) => next,
     default: () => "pending",
   }),
+  currentFileContent: Annotation<string>({
+    reducer: (_prev, next) => next,
+    default: () => "",
+  }),
   finalResult: Annotation<string | null>({
     reducer: (_prev, next) => next,
     default: () => null,

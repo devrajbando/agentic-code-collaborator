@@ -5,7 +5,7 @@ import { createGeminiProvider } from "../../llm/providers/gemini.js";
 import { createOpenRouterProvider } from "../../llm/providers/openrouter.js";
 import type { GraphStateType } from "../state.js";
 
-type AgentType = "docs" | "errorCheck" | "snippet";
+type SpecAgentType = "doc_gen" | "error_check" | "snippet_gen";
 
 // Adapters are stateless factories — safe to construct once per process (matches router.ts).
 const fastChain = buildFastChain(
@@ -18,18 +18,18 @@ const fastChain = buildFastChain(
 // "extract a spec" prompt, so each spec asks the question a real Critic would ask for
 // that agent type. None of these prompts ever see routerOutput.reasoning or any draft —
 // that is the entire point of this node.
-const SYSTEM_PROMPTS: Record<AgentType, string> = {
-  docs: `You are a verification-spec writer for a documentation-generation agent in a code editor's AI pipeline.
+const SYSTEM_PROMPTS: Record<SpecAgentType, string> = {
+  doc_gen: `You are a verification-spec writer for a documentation-generation agent in a code editor's AI pipeline.
 Given a single raw user event (an edit diff, inline comment, or chat command), write a short list of concrete, checkable requirements that any generated documentation/docstrings/comments must satisfy to genuinely address what the user asked for — not how you'd write the docs yourself, just what would make an independent reviewer say "yes, this addresses the request."
 Respond with ONLY a raw JSON object, no markdown fences, no preamble, matching exactly:
 {"requirements": string[], "confidence": number, "reasoning": string}`,
 
-  errorCheck: `You are a verification-spec writer for an error/lint-checking agent in a code editor's AI pipeline.
+  error_check: `You are a verification-spec writer for an error/lint-checking agent in a code editor's AI pipeline.
 Given a single raw user event (an edit diff, inline comment, or chat command), write a short list of concrete, checkable requirements an error-check pass must satisfy — e.g. specific symptoms, behaviors, or code regions the user is flagging — so an independent reviewer can verify the check actually addressed the reported problem, not just that some lint ran.
 Respond with ONLY a raw JSON object, no markdown fences, no preamble, matching exactly:
 {"requirements": string[], "confidence": number, "reasoning": string}`,
 
-  snippet: `You are a verification-spec writer for a code-snippet-generation agent in a code editor's AI pipeline.
+  snippet_gen: `You are a verification-spec writer for a code-snippet-generation agent in a code editor's AI pipeline.
 Given a single raw user event (an edit diff, inline comment, or chat command), write a short list of concrete, checkable requirements the generated snippet must satisfy (expected behavior, inputs/outputs, edge cases, naming/signature constraints implied by the request) so an independent reviewer can verify the snippet actually does what was asked, without relying on the generator's own explanation of what it did.
 Respond with ONLY a raw JSON object, no markdown fences, no preamble, matching exactly:
 {"requirements": string[], "confidence": number, "reasoning": string}`,
@@ -41,7 +41,7 @@ function extractJson(raw: string): string {
   return (fenced ? fenced[1] : raw).trim();
 }
 
-function fallbackSpec(agentType: AgentType, reason: string): SpecObject {
+function fallbackSpec(agentType: SpecAgentType, reason: string): SpecObject {
   // Graceful failure per Section 3 recovery model: never blank-error the graph.
   // A single-requirement, confidence:0 spec still lets the Critic run (against a
   // minimal "addresses the user's request" bar) instead of blocking the branch entirely.
@@ -54,7 +54,7 @@ function fallbackSpec(agentType: AgentType, reason: string): SpecObject {
   };
 }
 
-async function extractOne(agentType: AgentType, userEvent: string): Promise<SpecObject> {
+async function extractOne(agentType: SpecAgentType, userEvent: string): Promise<SpecObject> {
   const { result } = await callWithFallback(fastChain, {
     systemPrompt: SYSTEM_PROMPTS[agentType],
     userPrompt: userEvent,
@@ -93,10 +93,10 @@ export async function specExtractorNode(state: GraphStateType): Promise<Partial<
   // of any spec. Each spec's requirements come from a fresh LLM call over the raw
   // userEvent alone, so a router misclassification of *intent detail* (as opposed to
   // branch selection) can't leak into what the Critic later checks against.
-  const activeBranches: AgentType[] = [];
-  if (routerOutput?.needsDocs) activeBranches.push("docs");
-  if (routerOutput?.needsErrorCheck) activeBranches.push("errorCheck");
-  if (routerOutput?.needsSnippet) activeBranches.push("snippet");
+  const activeBranches: SpecAgentType[] = [];
+  if (routerOutput?.needsDocs) activeBranches.push("doc_gen");
+  if (routerOutput?.needsErrorCheck) activeBranches.push("error_check");
+  if (routerOutput?.needsSnippet) activeBranches.push("snippet_gen");
 
   if (activeBranches.length === 0) {
     // Router produced no active branch (e.g. still in a graceful-failure/default state
