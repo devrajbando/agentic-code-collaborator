@@ -67,7 +67,7 @@ export const GraphState = Annotation.Root({
   }),
 
   // Terminal state
-  status: Annotation<"pending" | "success" | "graceful_failure">({
+    status: Annotation<"pending" | "success" | "graceful_failure" | "awaiting_hitl_router">({
     reducer: (_prev, next) => next,
     default: () => "pending",
   }),
