@@ -64,3 +64,14 @@ model SessionMemory {
   accepted   Boolean
   createdAt  DateTime @default(now())
 }
+
+model AcceptedSnippet {
+  id          String                 @id @default(cuid())
+  description String
+  code        String
+  language    String                 @default("typescript")
+  embedding   Unsupported("vector(768)")
+  createdAt   DateTime               @default(now())
+
+  @@map("accepted_snippets")
+}

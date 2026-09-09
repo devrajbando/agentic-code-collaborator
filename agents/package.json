@@ -10,6 +10,7 @@
     "typecheck": "cross-env NODE_OPTIONS=--max-old-space-size=8192 tsc --noEmit"
   },
   "dependencies": {
+    "@google/genai": "^2.21.0",
     "@langchain/core": "1.0.3",
     "@langchain/langgraph": "1.0.1",
     "@rcc/types": "*",
