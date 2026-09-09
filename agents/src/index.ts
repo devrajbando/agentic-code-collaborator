@@ -1,0 +1,1 @@
+console.log("agents placeholder — wired, not yet implemented");
