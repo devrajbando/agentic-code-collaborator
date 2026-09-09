@@ -24,7 +24,6 @@ export function buildGraph() {
     .addEdge("router", "spec_extractor")
 
     // Fan out to whichever branches the router selected.
-    // Placeholder: always goes to doc_gen for now, since routerNode is a stub.
     .addConditionalEdges("spec_extractor", (state: GraphStateType) => {
       const branches: string[] = [];
       if (state.routerOutput?.needsErrorCheck) branches.push("error_check");
@@ -37,23 +36,40 @@ export function buildGraph() {
     .addEdge("doc_gen", "critic")
     .addEdge("snippet_gen", "critic")
 
-    // Critic decision: accept -> continue; reject -> retry (max 3 attempts) or graceful failure
+    // Critic decision. Verdicts now carry agentType (see critic.ts), so this
+    // checks ALL of the current attempt's verdicts, not just the last one,
+    // and retries only the specific branch(es) that were actually rejected --
+    // replacing the old hardcoded-to-doc_gen placeholder.
     .addConditionalEdges("critic", (state: GraphStateType) => {
-      const latestVerdict = state.criticVerdicts[state.criticVerdicts.length - 1];
-      if (latestVerdict?.accepted) {
-        // Only snippets need sandbox execution
-        const hasSnippetDraft = state.drafts.some((d) => d.agentType === "snippet_gen");
+      const currentAttemptDrafts = state.drafts.filter((d) => d.attemptNumber === state.attemptNumber);
+      // criticNode emits exactly one verdict per current-attempt draft, in the
+      // same call that produced this state update, so the last N verdicts
+      // (N = number of current-attempt drafts) are this attempt's verdicts.
+      const currentVerdicts = state.criticVerdicts.slice(-currentAttemptDrafts.length);
+
+      const allAccepted = currentVerdicts.length > 0 && currentVerdicts.every((v) => v.accepted);
+
+      if (allAccepted) {
+        // Only snippets need sandbox execution.
+        const hasSnippetDraft = currentAttemptDrafts.some((d) => d.agentType === "snippet_gen");
         return hasSnippetDraft ? "executor" : END;
       }
+
       if (state.attemptNumber >= 3) {
-        return END; // graceful failure — handled by caller checking status
+        return END; // graceful failure -- handled by caller checking status
       }
-      // Retry: route back to whichever branch produced the rejected draft
-      // Placeholder routing — real logic keys off which branch's spec was unmet
-      return "doc_gen";
+
+      // Retry only the branch(es) whose verdict was rejected this attempt.
+      const rejected = currentVerdicts.filter((v) => !v.accepted).map((v) => v.agentType);
+      const retryTargets = rejected.filter((t) =>
+        t === "error_check" || t === "doc_gen" || t === "snippet_gen",
+      );
+      return retryTargets.length > 0 ? retryTargets : ["doc_gen"];
     }, {
       executor: "executor",
+      error_check: "error_check",
       doc_gen: "doc_gen",
+      snippet_gen: "snippet_gen",
       [END]: END,
     })
 
@@ -66,9 +82,13 @@ export function buildGraph() {
       failure_triage: "failure_triage",
     })
 
+    // Retry always targets snippet_gen here -- not a placeholder like before,
+    // confirmed correct: the executor only ever runs snippet_gen drafts (see
+    // "Only snippets need sandbox execution" above), so a failed execution
+    // can only ever have come from snippet_gen.
     .addConditionalEdges("failure_triage", (state: GraphStateType) => {
       if (state.attemptNumber >= 3) return END;
-      return "snippet_gen"; // retry with triage diagnosis attached
+      return "snippet_gen";
     }, {
       [END]: END,
       snippet_gen: "snippet_gen",
