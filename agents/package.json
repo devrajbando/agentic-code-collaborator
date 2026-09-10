@@ -7,13 +7,16 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
-    "typecheck": "cross-env NODE_OPTIONS=--max-old-space-size=8192 tsc --noEmit"
+    "typecheck": "cross-env NODE_OPTIONS=--max-old-space-size=8192 tsc --noEmit",
+    "worker": "tsx src/worker.ts"
   },
   "dependencies": {
     "@google/genai": "^2.21.0",
     "@langchain/core": "1.0.3",
     "@langchain/langgraph": "1.0.1",
     "@rcc/types": "*",
+    "bullmq": "^6.3.4",
+    "ioredis": "^6.0.0",
     "zod": "^4.5.4"
   },
   "devDependencies": {
