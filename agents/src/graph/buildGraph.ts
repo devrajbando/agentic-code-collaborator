@@ -8,6 +8,8 @@ import { snippetGenNode } from "./nodes/snippetGen.js";
 import { criticNode } from "./nodes/critic.js";
 import { executorNode } from "./nodes/executor.js";
 import { failureTriageNode } from "./nodes/failureTriage.js";
+import { attemptBumpNode } from "./nodes/attemptBump.js";
+import { criticHitlPauseNode } from "./nodes/criticHitlPause.js";
 
 export function buildGraph() {
   const graph = new StateGraph(GraphState)
@@ -19,11 +21,13 @@ export function buildGraph() {
     .addNode("critic", criticNode)
     .addNode("executor", executorNode)
     .addNode("failure_triage", failureTriageNode)
+    .addNode("attempt_bump", attemptBumpNode)
+    .addNode("attempt_bump_snippet", attemptBumpNode)
+    .addNode("critic_hitl_pause", criticHitlPauseNode)
 
     .addEdge(START, "router")
     .addEdge("router", "spec_extractor")
 
-    // Fan out to whichever branches the router selected.
     .addConditionalEdges("spec_extractor", (state: GraphStateType) => {
       const branches: string[] = [];
       if (state.routerOutput?.needsErrorCheck) branches.push("error_check");
@@ -36,41 +40,40 @@ export function buildGraph() {
     .addEdge("doc_gen", "critic")
     .addEdge("snippet_gen", "critic")
 
-    // Critic decision. Verdicts now carry agentType (see critic.ts), so this
-    // checks ALL of the current attempt's verdicts, not just the last one,
-    // and retries only the specific branch(es) that were actually rejected --
-    // replacing the old hardcoded-to-doc_gen placeholder.
     .addConditionalEdges("critic", (state: GraphStateType) => {
       const currentAttemptDrafts = state.drafts.filter((d) => d.attemptNumber === state.attemptNumber);
-      // criticNode emits exactly one verdict per current-attempt draft, in the
-      // same call that produced this state update, so the last N verdicts
-      // (N = number of current-attempt drafts) are this attempt's verdicts.
       const currentVerdicts = state.criticVerdicts.slice(-currentAttemptDrafts.length);
-
       const allAccepted = currentVerdicts.length > 0 && currentVerdicts.every((v) => v.accepted);
 
       if (allAccepted) {
-        // Only snippets need sandbox execution.
         const hasSnippetDraft = currentAttemptDrafts.some((d) => d.agentType === "snippet_gen");
         return hasSnippetDraft ? "executor" : END;
       }
 
       if (state.attemptNumber >= 3) {
-        return END; // graceful failure -- handled by caller checking status
+        // Controllable autonomy: attempt-3 HITL toggle, default OFF.
+        return state.hitlEnabled.attempt3Rejection ? "critic_hitl_pause" : END;
       }
 
-      // Retry only the branch(es) whose verdict was rejected this attempt.
-      const rejected = currentVerdicts.filter((v) => !v.accepted).map((v) => v.agentType);
-      const retryTargets = rejected.filter((t) =>
-        t === "error_check" || t === "doc_gen" || t === "snippet_gen",
-      );
-      return retryTargets.length > 0 ? retryTargets : ["doc_gen"];
+      // Retry: bump the attempt counter first (attempt_bump's own outgoing
+      // edge reads pendingRetryTargets, set above by criticNode, to fan out
+      // to the specific rejected branch(es)).
+      return "attempt_bump";
     }, {
       executor: "executor",
+      attempt_bump: "attempt_bump",
+      critic_hitl_pause: "critic_hitl_pause",
+      [END]: END,
+    })
+
+    .addEdge("critic_hitl_pause", END)
+
+    .addConditionalEdges("attempt_bump", (state: GraphStateType) => {
+      return state.pendingRetryTargets.length > 0 ? state.pendingRetryTargets : ["doc_gen"];
+    }, {
       error_check: "error_check",
       doc_gen: "doc_gen",
       snippet_gen: "snippet_gen",
-      [END]: END,
     })
 
     .addConditionalEdges("executor", (state: GraphStateType) => {
@@ -82,17 +85,15 @@ export function buildGraph() {
       failure_triage: "failure_triage",
     })
 
-    // Retry always targets snippet_gen here -- not a placeholder like before,
-    // confirmed correct: the executor only ever runs snippet_gen drafts (see
-    // "Only snippets need sandbox execution" above), so a failed execution
-    // can only ever have come from snippet_gen.
     .addConditionalEdges("failure_triage", (state: GraphStateType) => {
       if (state.attemptNumber >= 3) return END;
-      return "snippet_gen";
+      return "attempt_bump_snippet";
     }, {
       [END]: END,
-      snippet_gen: "snippet_gen",
-    });
+      attempt_bump_snippet: "attempt_bump_snippet",
+    })
+
+    .addEdge("attempt_bump_snippet", "snippet_gen");
 
   return graph.compile();
 }

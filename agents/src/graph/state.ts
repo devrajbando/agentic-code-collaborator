@@ -67,10 +67,14 @@ export const GraphState = Annotation.Root({
   }),
 
   // Terminal state
-    status: Annotation<"pending" | "success" | "graceful_failure" | "awaiting_hitl_router">({
-    reducer: (_prev, next) => next,
-    default: () => "pending",
-  }),
+   status: Annotation<"pending" | "success" | "graceful_failure" | "awaiting_hitl_router" | "awaiting_hitl_critic_reject">({
+  reducer: (_prev, next) => next,
+  default: () => "pending",
+}),
+pendingRetryTargets: Annotation<string[]>({
+  reducer: (_prev, next) => next,
+  default: () => [],
+}),
   currentFileContent: Annotation<string>({
     reducer: (_prev, next) => next,
     default: () => "",

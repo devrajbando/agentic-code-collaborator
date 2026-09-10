@@ -74,6 +74,11 @@ export async function criticNode(state: GraphStateType): Promise<Partial<GraphSt
       });
     }
   }
+  const allAccepted = verdicts.length > 0 && verdicts.every((v) => v.accepted);
+const rejectedAgentTypes = verdicts.filter((v) => !v.accepted).map((v) => v.agentType);
 
-  return { criticVerdicts: verdicts };
+  return {
+  criticVerdicts: verdicts,
+  pendingRetryTargets: allAccepted ? [] : rejectedAgentTypes,
+};
 }
