@@ -31,9 +31,16 @@ export function startAgentWorker() {
       // "completed". Only a thrown error (timeout above, or a real crash
       // inside invoke()) surfaces as a BullMQ job failure.
       return withWallClockBudget(
-        graph.invoke({ sessionId, userEvent, currentFileContent }),
-        JOB_WALL_CLOCK_BUDGET_MS,
-      );
+      graph.invoke(
+      { sessionId, userEvent, currentFileContent },
+      {
+        runName: `agent-run-${job.id}`,
+        metadata: { sessionId, jobId: job.id, attemptsMadeByBullMQ: job.attemptsMade },
+        tags: ["agent-graph"],
+      },
+      ),
+      JOB_WALL_CLOCK_BUDGET_MS,
+    );
     },
     { connection: getRedisConnection() },
   );

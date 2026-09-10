@@ -2,7 +2,7 @@
 import type { LLMProviderAdapter, LLMCallOptions, LLMCallResult } from "../types.js";
 
 export function createOpenRouterProvider(): LLMProviderAdapter {
-  const model = "nvidia/nemotron-3-super:free"; // swap here if this model gets deprecated
+  const model = "nvidia/nemotron-3-super-120b-a12b:free"; // swap here if this model gets deprecated
 
   return {
     name: "openrouter",
