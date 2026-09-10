@@ -16,7 +16,7 @@ export async function executorNode(state: GraphStateType): Promise<Partial<Graph
     // Shouldn't happen -- executor is only reached when critic accepted a
     // snippet_gen draft -- but fail gracefully rather than throwing.
     return {
-      executorResult: { stdout: "", stderr: "executor reached with no snippet_gen draft for the current attempt", exitCode: 1, durationMs: 0 },
+      executorResult: { stdout: "", stderr: "executor reached with no snippet_gen draft for the current attempt", exitCode: 1, durationMs: 0,signal:null },
     };
   }
 
@@ -36,6 +36,7 @@ export async function executorNode(state: GraphStateType): Promise<Partial<Graph
       stderr: response.compile?.stderr ? `${response.compile.stderr}\n${response.run.stderr}` : response.run.stderr,
       exitCode: response.run.code ?? (response.run.signal ? 1 : 0), // signal-killed (e.g. timeout) with no code -> treat as failure
       durationMs: Date.now() - startedAt,
+      signal: response.run.signal,
     };
 
     return { executorResult: result };
@@ -46,6 +47,7 @@ export async function executorNode(state: GraphStateType): Promise<Partial<Graph
         stderr: `Piston execution failed: ${err instanceof Error ? err.message.slice(0, 300) : String(err)}`,
         exitCode: 1,
         durationMs: Date.now() - startedAt,
+        signal:null
       },
     };
   }

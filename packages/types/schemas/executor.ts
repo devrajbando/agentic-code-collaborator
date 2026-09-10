@@ -5,5 +5,6 @@ export const ExecutorResultSchema = z.object({
   stderr: z.string(),
   exitCode: z.number().int(),
   durationMs: z.number().int().min(0),
+  signal: z.string().nullable(),
 });
 export type ExecutorResult = z.infer<typeof ExecutorResultSchema>;
