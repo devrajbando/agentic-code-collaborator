@@ -5,3 +5,4 @@ export * from "./generator.js";
 export * from "./critic.js";
 export * from "./executor.js";
 export * from "./triage.js";
+export * from "./snippetAcceptance.js"

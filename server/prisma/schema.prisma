@@ -75,3 +75,14 @@ model AcceptedSnippet {
 
   @@map("accepted_snippets")
 }
+
+model SuggestionOutcome {
+  id          String   @id @default(cuid())
+  sessionId   String
+  agentType   String   // "doc_gen" | "error_check" | "snippet_gen"
+  content     String
+  accepted    Boolean
+  createdAt   DateTime @default(now())
+
+  @@map("suggestion_outcomes")
+}
