@@ -1,11 +1,12 @@
 import { Queue } from "bullmq";
+import { Redis } from "ioredis";
 import { createHash } from "crypto";
-import { getRedisConnection } from "./connection.js";
 import { AGENT_QUEUE_NAME, AgentJobDataSchema, type AgentJobData } from "@rcc/types";
 
-export const agentQueue = new Queue(AGENT_QUEUE_NAME, { connection: getRedisConnection() });
+const REDIS_URL = process.env.REDIS_URL ?? "redis://localhost:6379";
+const connection = new Redis(REDIS_URL, { maxRetriesPerRequest: null });
 
-export const JOB_WALL_CLOCK_BUDGET_MS = 60_000;
+const agentQueue = new Queue(AGENT_QUEUE_NAME, { connection });
 
 function buildIdempotencyKey(data: AgentJobData): string {
   const hash = createHash("sha256")

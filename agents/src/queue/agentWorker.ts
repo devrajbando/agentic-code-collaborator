@@ -1,6 +1,7 @@
 import { Worker, Job } from "bullmq";
 import { getRedisConnection } from "./connection.js";
-import { AGENT_QUEUE_NAME, AgentJobData, JOB_WALL_CLOCK_BUDGET_MS } from "./agentQueue.js";
+import { JOB_WALL_CLOCK_BUDGET_MS } from "./agentQueue.js";
+import { AGENT_QUEUE_NAME, type AgentJobData } from "@rcc/types";
 import { buildGraph } from "../graph/buildGraph.js";
 
 class WallClockBudgetExceededError extends Error {
