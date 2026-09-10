@@ -10,6 +10,7 @@ import { executorNode } from "./nodes/executor.js";
 import { failureTriageNode } from "./nodes/failureTriage.js";
 import { attemptBumpNode } from "./nodes/attemptBump.js";
 import { criticHitlPauseNode } from "./nodes/criticHitlPause.js";
+import { finalizeStatusNode } from "./nodes/finalizeStatus.js";
 
 export function buildGraph() {
   const graph = new StateGraph(GraphState)
@@ -24,6 +25,7 @@ export function buildGraph() {
     .addNode("attempt_bump", attemptBumpNode)
     .addNode("attempt_bump_snippet", attemptBumpNode)
     .addNode("critic_hitl_pause", criticHitlPauseNode)
+    .addNode("finalize_status", finalizeStatusNode)
 
     .addEdge(START, "router")
     .addEdge("router", "spec_extractor")
@@ -46,27 +48,27 @@ export function buildGraph() {
       const allAccepted = currentVerdicts.length > 0 && currentVerdicts.every((v) => v.accepted);
 
       if (allAccepted) {
-        const hasSnippetDraft = currentAttemptDrafts.some((d) => d.agentType === "snippet_gen");
-        return hasSnippetDraft ? "executor" : END;
-      }
+      const hasSnippetDraft = currentAttemptDrafts.some((d) => d.agentType === "snippet_gen");
+      return hasSnippetDraft ? "executor" : "finalize_status";
+    }
 
       if (state.attemptNumber >= 3) {
-        // Controllable autonomy: attempt-3 HITL toggle, default OFF.
-        return state.hitlEnabled.attempt3Rejection ? "critic_hitl_pause" : END;
+        return state.hitlEnabled.attempt3Rejection ? "critic_hitl_pause" : "finalize_status";
       }
 
       // Retry: bump the attempt counter first (attempt_bump's own outgoing
       // edge reads pendingRetryTargets, set above by criticNode, to fan out
       // to the specific rejected branch(es)).
-      return "attempt_bump";
-    }, {
-      executor: "executor",
-      attempt_bump: "attempt_bump",
-      critic_hitl_pause: "critic_hitl_pause",
-      [END]: END,
-    })
+     return "attempt_bump";
+      }, {
+        executor: "executor",
+        attempt_bump: "attempt_bump",
+        critic_hitl_pause: "critic_hitl_pause",
+        finalize_status: "finalize_status",
+      })
 
     .addEdge("critic_hitl_pause", END)
+    .addEdge("finalize_status", END)
 
     .addConditionalEdges("attempt_bump", (state: GraphStateType) => {
       return state.pendingRetryTargets.length > 0 ? state.pendingRetryTargets : ["doc_gen"];
@@ -78,18 +80,18 @@ export function buildGraph() {
 
     .addConditionalEdges("executor", (state: GraphStateType) => {
       const result = state.executorResult;
-      if (result && result.exitCode === 0) return END;
+      if (result && result.exitCode === 0) return "finalize_status";
       return "failure_triage";
     }, {
-      [END]: END,
+      finalize_status: "finalize_status",
       failure_triage: "failure_triage",
     })
 
     .addConditionalEdges("failure_triage", (state: GraphStateType) => {
-      if (state.attemptNumber >= 3) return END;
+      if (state.attemptNumber >= 3) return "finalize_status";
       return "attempt_bump_snippet";
     }, {
-      [END]: END,
+      finalize_status: "finalize_status",
       attempt_bump_snippet: "attempt_bump_snippet",
     })
 

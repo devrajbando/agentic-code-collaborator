@@ -2,8 +2,7 @@ import { traceable } from "langsmith/traceable";
 import type { LLMProviderAdapter, LLMCallOptions, LLMCallResult } from "./types";
 
 const HEALTH_TTL_MS = 30_000;
-const DEFAULT_TIMEOUT_MS = 4_000;
-
+const DEFAULT_TIMEOUT_MS = 20_000;
 interface ProviderHealth {
   healthy: boolean;
   unhealthyUntil: number;
