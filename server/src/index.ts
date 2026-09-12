@@ -14,6 +14,8 @@ import suggestionOutcomesRoutes from "./routes/suggestionOutcomes.js";
 const app = express();
 const httpServer = createServer(app);
 
+app.set("trust proxy", 1);
+
 app.use(cors({ origin: `${process.env.FRONTEND_URL}`, credentials: true }));
 app.use(cookieParser());
 app.use(express.json());
