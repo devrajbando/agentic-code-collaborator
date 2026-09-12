@@ -10,7 +10,7 @@ import CommitDetailModal from "../components/project/CommitDetailModal";
 import { useAgentPipeline } from "../hooks/useAgentPipeline";
 import { AgentDock } from "../components/project/AgentDock";
 import type { GeneratorDraft } from "../types/agent";
-
+import { API_BASE_URL } from '../lib/apiConfig';
 const fileContents: Record<string, string> = {
   "auth.ts": `function verifyToken(token) {
   // checks signature and expiry
@@ -114,7 +114,7 @@ export default function ProjectViewPage() {
       editorRef.current?.applyResult(draft.content, "cursor");
     }
     try {
-      await fetch(`http://localhost:4000/api/suggestions`, {
+      await fetch(`${API_BASE_URL}/api/suggestions`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -134,7 +134,7 @@ export default function ProjectViewPage() {
   useEffect(() => {
     const fetchProjectData = async () => {
       try {
-        const settingsRes = await fetch(`http://localhost:4000/api/projects/${projectId}/settings`, {
+        const settingsRes = await fetch(`${API_BASE_URL}/api/projects/${projectId}/settings`, {
           credentials: "include",
         });
         if (settingsRes.ok) {
@@ -144,7 +144,7 @@ export default function ProjectViewPage() {
           setProjectName("Workspace");
         }
 
-        const treeRes = await fetch(`http://localhost:4000/api/projects/${projectId}/tree`, {
+        const treeRes = await fetch(`${API_BASE_URL}/api/projects/${projectId}/tree`, {
           credentials: "include",
         });
         if (treeRes.ok) {
@@ -154,7 +154,7 @@ export default function ProjectViewPage() {
           }
         }
 
-        const commitsRes = await fetch(`http://localhost:4000/api/projects/${projectId}/commits`, {
+        const commitsRes = await fetch(`${API_BASE_URL}/api/projects/${projectId}/commits`, {
           credentials: "include",
         });
         if (commitsRes.ok) {
@@ -205,7 +205,7 @@ export default function ProjectViewPage() {
     setFileTree(updatedTree);
     socket.emit("file-tree-mutation", { projectId, tree: updatedTree });
     try {
-      await fetch(`http://localhost:4000/api/projects/${projectId}/tree`, {
+      await fetch(`${API_BASE_URL}/api/projects/${projectId}/tree`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ tree: updatedTree }),
@@ -307,7 +307,7 @@ export default function ProjectViewPage() {
     const snapshotWithContent = attachContentsToNodes(fileTree);
 
     try {
-      const res = await fetch(`http://localhost:4000/api/projects/${projectId}/commits`, {
+      const res = await fetch(`${API_BASE_URL}/api/projects/${projectId}/commits`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

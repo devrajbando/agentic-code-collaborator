@@ -4,7 +4,6 @@ import {
   AGENT_LABELS,
   CONTENT_AGENT_TYPES,
   latestByAgent,
-  type AgentType,
   type GeneratorDraft,
 } from "../../types/agent";
 import { buildExecutionLog } from "../../types/agent";

@@ -2,7 +2,7 @@ import { forwardRef, useCallback, useImperativeHandle, useRef, useState } from "
 import Editor, { type Monaco } from "@monaco-editor/react";
 import type * as MonacoNS from "monaco-editor";
 import { useYjsBinding } from "../../hooks/useYjsBinding";
-
+import type { OnMount } from "@monaco-editor/react";
 export type OpenFile = { id: string; name: string; content: string };
 
 export type CodeEditorPaneHandle = {
@@ -61,14 +61,14 @@ const CodeEditorPane = forwardRef<
   const [editorInstance, setEditorInstance] = useState<MonacoNS.editor.IStandaloneCodeEditor | null>(null);
   const [monacoInstance, setMonacoInstance] = useState<Monaco | null>(null);
 
-  const handleMount = useCallback(
-    (editor: MonacoNS.editor.IStandaloneCodeEditor, monaco: Monaco) => {
-      editorRef.current = editor;
-      monacoRef.current = monaco;
+ const handleMount = useCallback<OnMount>(
+    (editor, monaco) => {
+      editorRef.current = editor as any;
+      monacoRef.current = monaco as any;
       defineSynqTheme(monaco);
       monaco.editor.setTheme(THEME_NAME);
-      setEditorInstance(editor);
-      setMonacoInstance(monaco);
+      setEditorInstance(editor as any);
+      setMonacoInstance(monaco as any);
 
       editor.getModel()?.onDidChangeContent(() => {
         const currentContent = editor.getValue();

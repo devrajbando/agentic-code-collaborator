@@ -6,7 +6,7 @@ import CreateOrJoinTile from "../components/dashboard/CreateOrJoinTile";
 import CreateProjectModal from "../components/dashboard/CreateProjectModal";
 import { JoinProjectModal } from "../components/dashboard/JoinProjectModal";
 import { useQueryParam } from "../hooks/useQueryParams";
-
+import { API_BASE_URL } from '../lib/apiConfig';
 export default function DashboardPage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -18,7 +18,7 @@ export default function DashboardPage() {
 
   const fetchProjects = useCallback(async () => {
     try {
-      const res = await fetch("http://localhost:4000/api/projects", {
+      const res = await fetch(`${API_BASE_URL}/api/projects`, {
         credentials: "include",
       });
       if (res.ok) {

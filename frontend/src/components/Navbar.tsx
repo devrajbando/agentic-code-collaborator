@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useCurrentUser } from "../context/CurrentUserContext";
-
+import { API_BASE_URL } from '../lib/apiConfig';
 const navLinks = ["Product", "Docs", "Pricing", "Changelog"];
 
 export default function Navbar() {
@@ -9,7 +9,7 @@ export default function Navbar() {
   const [showSignIn, setShowSignIn] = useState(false);
 
   const signIn = (provider: "google" | "github") => {
-    window.location.href = `http://localhost:4000/auth/${provider}`;
+    window.location.href = `${API_BASE_URL}/auth/${provider}`;
   };
 
   return (

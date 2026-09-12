@@ -1,10 +1,9 @@
-const AUTH_BASE_URL = "http://localhost:4000";
-
+import { API_BASE_URL } from '../../lib/apiConfig';
 // OAuth's redirect-based flow can't be done via fetch/AJAX — the browser
 // itself needs to navigate to the provider's consent screen, so this is a
 // deliberate full-page redirect, not a client-side router push.
 function startOAuth(provider: "google" | "github") {
-  window.location.href = `${AUTH_BASE_URL}/auth/${provider}`;
+  window.location.href = `${API_BASE_URL}/auth/${provider}`;
 }
 
 export default function SignInButtons({ className = "" }: { className?: string }) {

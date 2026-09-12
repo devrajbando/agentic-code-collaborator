@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-
+import { API_BASE_URL } from '../../lib/apiConfig';
 interface CreateProjectModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -22,7 +22,7 @@ export default function CreateProjectModal({ isOpen, onClose }: CreateProjectMod
     setError(null);
 
     try {
-      const res = await fetch("http://localhost:4000/api/projects", {
+      const res = await fetch(`${API_BASE_URL}/api/projects`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: projectName }),

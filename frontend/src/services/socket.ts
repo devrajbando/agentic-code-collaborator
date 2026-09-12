@@ -1,4 +1,5 @@
 import { io, Socket } from "socket.io-client";
+import { API_BASE_URL } from "../lib/apiConfig";
 
 declare global {
   // eslint-disable-next-line no-var
@@ -6,7 +7,7 @@ declare global {
 }
 
 function createConnection(): Socket {
-  return io("http://localhost:4000", {
+  return io(API_BASE_URL, {
     withCredentials: true,
     transports: ["websocket", "polling"],
   });
@@ -25,8 +26,6 @@ export function createSocket(): Socket {
   return getSocket();
 }
 
-// Vite HMR: dispose the connection on real teardown (full page reload / module removal),
-// not on every hot-swap — this is what actually breaks the accumulation.
 if (import.meta.hot) {
   import.meta.hot.dispose(() => {
     globalThis.__synqSocket?.disconnect();

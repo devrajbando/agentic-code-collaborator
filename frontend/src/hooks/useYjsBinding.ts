@@ -3,7 +3,7 @@ import * as Y from "yjs";
 import { Awareness, encodeAwarenessUpdate, applyAwarenessUpdate } from "y-protocols/awareness";
 import { MonacoBinding } from "y-monaco";
 import type * as MonacoNS from "monaco-editor";
-import { getSocket } from "../lib/socket";
+import { getSocket } from "../services/socket";
 import { useCurrentUser } from "../context/CurrentUserContext";
 
 // A small fixed palette so remote cursors are distinguishable without

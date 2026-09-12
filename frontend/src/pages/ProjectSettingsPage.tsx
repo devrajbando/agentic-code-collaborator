@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import AppNavbar from "../components/AppNavbar";
 import { useCurrentUser } from "../context/CurrentUserContext";
-
+import { API_BASE_URL } from '../lib/apiConfig';
 type ProjectMember = {
   id: string;
   name: string | null;
@@ -30,7 +30,7 @@ export default function ProjectSettingsPage() {
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const res = await fetch(`http://localhost:4000/api/projects/${projectId}/settings`, {
+        const res = await fetch(`${API_BASE_URL}/api/projects/${projectId}/settings`, {
           credentials: "include",
         });
         if (!res.ok) throw new Error("Failed to load project settings");
@@ -58,7 +58,7 @@ export default function ProjectSettingsPage() {
   const handleRemoveMember = async (targetUserId: string) => {
     if (!window.confirm("Are you sure you want to remove this member?")) return;
     try {
-      const res = await fetch(`http://localhost:4000/api/projects/${projectId}/members/${targetUserId}`, {
+      const res = await fetch(`${API_BASE_URL}/api/projects/${projectId}/members/${targetUserId}`, {
         method: "DELETE",
         credentials: "include",
       });
@@ -80,8 +80,8 @@ export default function ProjectSettingsPage() {
     setIsSubmitting(true);
     try {
       const url = isAdmin 
-        ? `http://localhost:4000/api/projects/${projectId}`
-        : `http://localhost:4000/api/projects/${projectId}/members/${user?.id}`;
+        ? `${API_BASE_URL}/api/projects/${projectId}`
+        : `${API_BASE_URL}/api/projects/${projectId}/members/${user?.id}`;
 
       const res = await fetch(url, {
         method: "DELETE",

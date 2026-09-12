@@ -6,7 +6,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-
+import { API_BASE_URL } from '../lib/apiConfig';
 export type CurrentUser = {
   id: string;
   email: string;
@@ -28,7 +28,7 @@ const CurrentUserContext = createContext<CurrentUserState>({
   logout: async () => {},
 });
 
-const API_URL = "http://localhost:4000";
+const API_URL = API_BASE_URL
 
 const ACCENT_COLORS = [
   "#5dcaa5",
