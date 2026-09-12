@@ -5,7 +5,7 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import passport from "./config/passport.js";
 import authRoutes from "./routes/auth.js";
-import projectRoutes from "./routes/projects";
+import projectRoutes from "./routes/projects.js";
 import { requireAuth, AuthedRequest } from "./middleware/requireAuth.js";
 import { initSocket } from "./lib/socket.js";
 import { initAgentSubscriber } from "./lib/agentSubscriber.js"; // <-- Add this import
