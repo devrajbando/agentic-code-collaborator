@@ -1,6 +1,9 @@
 {
   "name": "realtime-code-collaborator",
   "private": true,
+  "engines": {
+  "node": "22.x"
+},
   "workspaces": [
     "frontend",
     "server",
