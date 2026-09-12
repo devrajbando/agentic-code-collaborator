@@ -22,7 +22,7 @@ export function JoinProjectModal({ isOpen, onClose }: JoinProjectModalProps) {
     setError(null);
 
     try {
-      const res = await fetch(`${API_BASE_URL}/projects/join`, {
+      const res = await fetch(`${API_BASE_URL}/api/projects/join`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ code: inviteCode }),
