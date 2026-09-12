@@ -44,10 +44,20 @@ function fallbackRouterOutput(reason: string): RouterOutput {
 }
 
 export async function routerNode(state: GraphStateType): Promise<Partial<GraphStateType>> {
-  const { result } = await callWithFallback(fastChain, {
-    systemPrompt: SYSTEM_PROMPT,
-    userPrompt: state.userEvent,
-  });
+  let result;
+  try {
+    ({ result } = await callWithFallback(fastChain, {
+      systemPrompt: SYSTEM_PROMPT,
+      userPrompt: state.userEvent,
+    }));
+  } catch (err) {
+    return {
+      routerOutput: fallbackRouterOutput(
+        `Router LLM call failed on all providers; defaulted to docs. Error: ${err instanceof Error ? err.message : String(err)}`,
+      ),
+    };
+  }
+
 
   let parsed: unknown;
   try {

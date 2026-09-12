@@ -114,18 +114,19 @@ export async function errorCheckNode(state: GraphStateType): Promise<Partial<Gra
   const errorCheckSpec = specs.find((s) => s.agentType === "error_check");
 
   const tsIssues = runTsCheck(currentFileContent);
-
+console.log("[error-check] tsc check done, running eslint...");
   let eslintIssues: ToolIssue[] = [];
   let eslintFailed = false;
   try {
     eslintIssues = await runEslintCheck(currentFileContent);
+     console.log("[error-check] eslint check done, issues:", eslintIssues.length);
   } catch (err) {
     // A tool failing to RUN (bad config resolution, etc.) is not the same as
     // "graceful failure" for the whole node -- degrade to "this tool didn't
     // run" and continue, rather than aborting the branch.
     eslintFailed = true;
     eslintIssues = [];
-    void err; // reason captured in the note appended to the draft content below
+    console.error("[error-check] ESLint failed to run:", err instanceof Error ? err.message : err);
   }
 
   const toolIssues = [...tsIssues, ...eslintIssues];

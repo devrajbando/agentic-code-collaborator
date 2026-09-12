@@ -19,7 +19,7 @@ function extractJson(raw: string): string {
 // Matches executor.ts's RUN_TIMEOUT_MS. A duration at/past this is almost
 // certainly Piston's run_timeout killing the process, not a genuine runtime
 // error -- but this is a heuristic, not a direct signal (see flag below).
-const TIMEOUT_THRESHOLD_MS = 5000;
+const TIMEOUT_THRESHOLD_MS = 2900;
 
 const SYSTEM_PROMPT = `You are the Failure Triage agent for a real-time collaborative code editor's AI pipeline.
 A generated code snippet failed execution in a sandbox. Classify the failure and produce a SHORT, targeted diagnosis -- never the raw stack trace, never quote large blocks of stderr verbatim. Distill it into what actually went wrong and what to fix.

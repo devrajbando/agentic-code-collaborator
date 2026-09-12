@@ -5,11 +5,13 @@ import { AGENT_QUEUE_NAME, AgentJobDataSchema, type AgentJobData } from "@rcc/ty
 
 export const agentQueue = new Queue(AGENT_QUEUE_NAME, { connection: getRedisConnection() });
 
-export const JOB_WALL_CLOCK_BUDGET_MS = 60_000;
+export const JOB_WALL_CLOCK_BUDGET_MS = 100_000;
+// export const JOB_WALL_CLOCK_BUDGET_MS = 1000;
 
-function buildIdempotencyKey(data: AgentJobData): string {
+export function buildIdempotencyKey(data: AgentJobData): string {
+  const bucket = Math.floor(Date.now() / 3000);
   const hash = createHash("sha256")
-    .update(`${data.sessionId}:${data.userEvent}:${data.currentFileContent}`)
+    .update(`${data.sessionId}:${data.userEvent}:${data.currentFileContent}:${bucket}`)
     .digest("hex");
   return `agent-${hash}`;
 }

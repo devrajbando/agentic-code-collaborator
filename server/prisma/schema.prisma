@@ -12,32 +12,40 @@ model User {
   email     String     @unique
   name      String?
   googleId  String?    @unique
+  githubId  String?    @unique
   createdAt DateTime   @default(now())
   sessions  Session[]
   documents Document[]
+  projectMembers ProjectMember[]
 }
 
 model Session {
-  id         String   @id @default(uuid())
-  user       User     @relation(fields: [userId], references: [id])
-  userId     String
-  document   Document @relation(fields: [documentId], references: [id])
-  documentId String
-  startedAt  DateTime @default(now())
-  endedAt    DateTime?
+  id            String          @id @default(uuid())
+  user          User            @relation(fields: [userId], references: [id])
+  userId        String
+  document      Document        @relation(fields: [documentId], references: [id])
+  documentId    String
+  startedAt     DateTime        @default(now())
+  endedAt       DateTime?
 
   agentRuns     AgentRun[]
   memoryEntries SessionMemory[]
 }
 
 model Document {
-  id        String    @id @default(uuid())
+  id        String   @id @default(uuid())
   title     String
-  content   String    @default("")
-  owner     User      @relation(fields: [ownerId], references: [id])
+  content   String   @default("")
+  
+  // A Document now belongs to a Project, created by an Owner
+  projectId String?  
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  owner     User     @relation(fields: [ownerId], references: [id])
   ownerId   String
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
   sessions  Session[]
 }
 
@@ -85,4 +93,40 @@ model SuggestionOutcome {
   createdAt   DateTime @default(now())
 
   @@map("suggestion_outcomes")
+}
+model Project {
+  id         String          @id @default(uuid())
+  name       String
+  inviteCode String          @unique
+  fileTree   Json?
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+  members    ProjectMember[]
+  commits    Commit[]
+  documents  Document[]      // Re-routes documents to belong to a project
+}
+
+model ProjectMember {
+  id        String   @id @default(uuid())
+  projectId String
+  userId    String
+  role      String   // "admin" | "member"
+  
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId]) // Ensures a user can't join the same project twice
+}
+
+model Commit {
+  id               String   @id @default(uuid())
+  projectId        String
+  project          Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  shortHash        String
+  message          String
+  authorId         String?
+  authorName       String
+  authorInitials   String
+  fileTreeSnapshot Json     // <-- Stores the exact file tree state at commit time
+  createdAt        DateTime @default(now())
 }

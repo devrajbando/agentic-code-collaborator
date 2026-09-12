@@ -5,10 +5,13 @@
   "type": "module",
   "main": "src/index.ts",
   "scripts": {
-  "dev": "tsx watch --env-file=../.env src/index.ts",
-  "build": "tsc",
-  "typecheck": "cross-env NODE_OPTIONS=--max-old-space-size=8192 tsc --noEmit",
-  "worker": "tsx --env-file=../.env src/worker.ts"
+    "dev": "tsx watch --env-file=../.env src/index.ts",
+    "build": "tsc",
+    "typecheck": "cross-env NODE_OPTIONS=--max-old-space-size=8192 tsc --noEmit",
+    "worker": "tsx --env-file=../.env src/worker.ts",
+    "eval:critic": "tsx --env-file=../.env src/evals/critic.eval.ts",
+    "eval:router": "tsx --env-file=../.env src/evals/router.eval.ts",
+    "test": "vitest run"
   },
   "dependencies": {
     "@google/genai": "^2.21.0",
@@ -25,6 +28,7 @@
     "@types/node": "^20.19.43",
     "cross-env": "^10.1.0",
     "tsx": "^4.16.2",
-    "typescript": "^5.5.4"
+    "typescript": "^5.5.4",
+    "vitest": "^5.0.0"
   }
 }

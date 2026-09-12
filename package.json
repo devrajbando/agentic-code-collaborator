@@ -11,6 +11,17 @@
   "scripts": {
     "dev:server": "npm run dev -w server",
     "dev:frontend": "npm run dev -w frontend",
-    "dev:worker": "npm run dev -w execution-worker"
+    "dev:worker": "npm run dev -w execution-worker",
+    "test": "npm run test --workspaces --if-present",
+    "test:e2e": "playwright test"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.63.0",
+    "@types/node": "^22.20.2",
+    "@vitest/coverage-v8": "^5.0.0",
+    "eslint": "^10.10.0",
+    "typescript-eslint": "^8.70.0",
+    "vitest": "^5.0.0"
   }
 }

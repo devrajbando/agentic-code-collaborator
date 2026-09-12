@@ -4,8 +4,8 @@ import { pistonExecute } from "../../tools/pistonClient.js";
 
 const LANGUAGE = process.env.PISTON_LANGUAGE ?? "typescript";
 const VERSION = process.env.PISTON_VERSION ?? "5.0.3";
-const RUN_TIMEOUT_MS = 5000;
-const COMPILE_TIMEOUT_MS = 10000;
+const RUN_TIMEOUT_MS = 2900;
+const COMPILE_TIMEOUT_MS = 2900;
 
 export async function executorNode(state: GraphStateType): Promise<Partial<GraphStateType>> {
   const snippetDraft = state.drafts

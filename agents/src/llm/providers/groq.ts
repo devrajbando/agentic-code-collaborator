@@ -1,7 +1,8 @@
 import type { LLMProviderAdapter, LLMCallOptions, LLMCallResult } from "../types.js";
 
 export function createGroqProvider(): LLMProviderAdapter {
-  const model = "llama-3.3-70b-versatile";
+  // const model = "llama-3.3-70b-versatile";
+  const model = "openai/gpt-oss-120b";
 
   return {
     name: "groq",

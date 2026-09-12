@@ -141,18 +141,43 @@ ${
 }
 
 Respond with ONLY the JSDoc comment block (starting with /**, ending with */), no surrounding prose, no markdown fences.`;
-
-  const { result } = await callWithFallback(qualityChain, {
+let result;
+try {
+  ({ result } = await callWithFallback(qualityChain, {
     systemPrompt,
     userPrompt: target.bodyText,
-  });
-
-  const draft: GeneratorDraft = {
-    agentType: "doc_gen",
-    content: result.content.trim(),
-    toolsUsed: ["ts-ast-parser", `llm:${result.provider}`],
-    attemptNumber,
+  }));
+} catch (err) {
+  return {
+    drafts: [
+      fallbackDraft(
+        `Doc-Gen LLM call failed on all providers. Error: ${err instanceof Error ? err.message : String(err)}`,
+        attemptNumber,
+      ),
+    ],
   };
+}
+
+  const content =
+  typeof result.content === "string"
+    ? result.content.trim()
+    : null;
+if (content === null) {
+  return {
+    drafts: [
+      fallbackDraft(
+        "Doc-Gen agent produced an invalid draft and could not complete this attempt. Validation errors: content must be a string.",
+        attemptNumber,
+      ),
+    ],
+  };
+}
+const draft: GeneratorDraft = {
+  agentType: "doc_gen",
+  content,
+  toolsUsed: ["ts-ast-parser", `llm:${result.provider}`],
+  attemptNumber,
+};
 
   const validated = GeneratorDraftSchema.safeParse(draft);
   if (!validated.success) {
