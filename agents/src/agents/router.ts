@@ -30,8 +30,8 @@
  */
 
 import { z } from "zod";
-import { callWithFallback } from "../llm/fallback";
-import type { LLMProviderAdapter } from "../llm/types";
+import { callWithFallback } from "../llm/fallback.js";
+import type { LLMProviderAdapter } from "../llm/types.js";
 
 // ---------- Types ----------
 

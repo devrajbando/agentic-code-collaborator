@@ -1,5 +1,5 @@
-import { prisma } from "../db/client"
-import { embedText } from "../llm/embeddings";
+import { prisma } from "../db/client.js"
+import { embedText } from "../llm/embeddings.js";
 
 export interface RetrievedSnippet {
   id: string;

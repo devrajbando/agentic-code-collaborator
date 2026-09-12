@@ -1,5 +1,5 @@
 import { traceable } from "langsmith/traceable";
-import type { LLMProviderAdapter, LLMCallOptions, LLMCallResult } from "./types";
+import type { LLMProviderAdapter, LLMCallOptions, LLMCallResult } from "./types.js";
 
 const HEALTH_TTL_MS = 30_000;
 const DEFAULT_TIMEOUT_MS = 20_000;

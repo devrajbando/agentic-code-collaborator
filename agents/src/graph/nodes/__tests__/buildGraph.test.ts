@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { buildGraph } from "../../buildGraph";
+import { buildGraph } from "../../buildGraph.js";
 import { errorCheckNode } from "../errorCheck.js";
 import { docGenNode } from "../docGen.js";
 import { snippetGenNode } from "../snippetGen.js";

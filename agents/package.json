@@ -11,7 +11,8 @@
     "worker": "tsx --env-file=../.env src/worker.ts",
     "eval:critic": "tsx --env-file=../.env src/evals/critic.eval.ts",
     "eval:router": "tsx --env-file=../.env src/evals/router.eval.ts",
-    "test": "vitest run"
+    "test": "vitest run",
+    "start": "node dist/worker.js"
   },
   "dependencies": {
     "@google/genai": "^2.21.0",

@@ -1,6 +1,6 @@
 // agents/src/llm/fallback.smoke.ts
-import { callWithFallback } from "./fallback";
-import type { LLMProviderAdapter, LLMCallOptions, LLMCallResult } from "./types";
+import { callWithFallback } from "./fallback.js";
+import type { LLMProviderAdapter, LLMCallOptions, LLMCallResult } from "./types.js";
 
 function mockAdapter(
   name: string,

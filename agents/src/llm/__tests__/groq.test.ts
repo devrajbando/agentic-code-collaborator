@@ -1,6 +1,6 @@
 // agents/src/llm/providers/__tests__/groq.test.ts
 import { describe, it, expect, vi } from "vitest";
-import { createGroqProvider } from "../providers/groq";
+import { createGroqProvider } from "../providers/groq.js";
 
 describe("groq adapter", () => {
   it("throws with the response body on a non-ok status (e.g. dead/gated model)", async () => {
