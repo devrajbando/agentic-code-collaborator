@@ -1,11 +1,9 @@
 import type { GraphStateType } from "../state.js";
 import type { ExecutorResult } from "@rcc/types";
-import { pistonExecute } from "../../tools/pistonClient.js";
+import { jdoodleExecute } from "../../tools/jDoodleClient.js";
 
-const LANGUAGE = process.env.PISTON_LANGUAGE ?? "typescript";
-const VERSION = process.env.PISTON_VERSION ?? "5.0.3";
-const RUN_TIMEOUT_MS = 2900;
-const COMPILE_TIMEOUT_MS = 2900;
+const LANGUAGE = process.env.JDOODLE_LANGUAGE ?? "typescript";
+const VERSION_INDEX = process.env.JDOODLE_VERSION_INDEX ?? "1";
 
 export async function executorNode(state: GraphStateType): Promise<Partial<GraphStateType>> {
   const snippetDraft = state.drafts
@@ -16,27 +14,31 @@ export async function executorNode(state: GraphStateType): Promise<Partial<Graph
     // Shouldn't happen -- executor is only reached when critic accepted a
     // snippet_gen draft -- but fail gracefully rather than throwing.
     return {
-      executorResult: { stdout: "", stderr: "executor reached with no snippet_gen draft for the current attempt", exitCode: 1, durationMs: 0,signal:null },
+      executorResult: { stdout: "", stderr: "executor reached with no snippet_gen draft for the current attempt", exitCode: 1, durationMs: 0, signal: null },
     };
   }
 
   const startedAt = Date.now();
 
   try {
-    const response = await pistonExecute({
+    const response = await jdoodleExecute({
       language: LANGUAGE,
-      version: VERSION,
-      files: [{ name: "snippet.ts", content: snippetDraft.content }],
-      run_timeout: RUN_TIMEOUT_MS,
-      compile_timeout: COMPILE_TIMEOUT_MS,
+      versionIndex: VERSION_INDEX,
+      script: snippetDraft.content,
     });
 
+    // JDoodle has no separate compile-phase stderr and no signal field -- it
+    // folds everything into `output`/`error`. isExecutionSuccess is the
+    // clearest available signal for exitCode; fall back to statusCode !== 200
+    // if that field is ever absent.
+    const succeeded = response.isExecutionSuccess ?? response.statusCode === 200;
+
     const result: ExecutorResult = {
-      stdout: response.run.stdout,
-      stderr: response.compile?.stderr ? `${response.compile.stderr}\n${response.run.stderr}` : response.run.stderr,
-      exitCode: response.run.code ?? (response.run.signal ? 1 : 0), // signal-killed (e.g. timeout) with no code -> treat as failure
+      stdout: succeeded ? response.output : "",
+      stderr: succeeded ? "" : (response.error ?? response.output ?? "JDoodle execution failed"),
+      exitCode: succeeded ? 0 : 1,
       durationMs: Date.now() - startedAt,
-      signal: response.run.signal,
+      signal: null, // JDoodle's contract has no equivalent to Piston's signal-killed distinction
     };
 
     return { executorResult: result };
@@ -44,10 +46,10 @@ export async function executorNode(state: GraphStateType): Promise<Partial<Graph
     return {
       executorResult: {
         stdout: "",
-        stderr: `Piston execution failed: ${err instanceof Error ? err.message.slice(0, 300) : String(err)}`,
+        stderr: `JDoodle execution failed: ${err instanceof Error ? err.message.slice(0, 300) : String(err)}`,
         exitCode: 1,
         durationMs: Date.now() - startedAt,
-        signal:null
+        signal: null,
       },
     };
   }
