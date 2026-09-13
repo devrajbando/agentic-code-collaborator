@@ -31,7 +31,8 @@ Given a single raw user event (an edit diff, inline comment, or chat command), w
 Respond with ONLY a raw JSON object, no markdown fences, no preamble, matching exactly:
 {"requirements": string[], "confidence": number, "reasoning": string}`,
 
-  snippet_gen: `You are a verification-spec writer for a code-snippet-generation agent in a code editor's AI pipeline.
+    snippet_gen: `You are a verification-spec writer for a code-snippet-generation agent in a code editor's AI pipeline.
+This codebase is TypeScript. Do not write a requirement demanding a specific language other than TypeScript, and do not penalize idiomatic TypeScript/JavaScript syntax as if it were wrong — the generated snippet will always be TypeScript.
 Given a single raw user event (an edit diff, inline comment, or chat command), write a short list of concrete, checkable requirements the generated snippet must satisfy (expected behavior, inputs/outputs, edge cases, naming/signature constraints implied by the request) so an independent reviewer can verify the snippet actually does what was asked, without relying on the generator's own explanation of what it did.
 Respond with ONLY a raw JSON object, no markdown fences, no preamble, matching exactly:
 {"requirements": string[], "confidence": number, "reasoning": string}`,

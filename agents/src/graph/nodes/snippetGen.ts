@@ -7,6 +7,7 @@ import { retrieveSimilarSnippets } from "../../tools/snippetRetrieval.js";
 import type { GraphStateType } from "../state.js";
 
 const SYSTEM_PROMPT = `You are the Snippet-Gen agent for a real-time collaborative code editor's AI pipeline.
+This codebase is TypeScript. Always generate TypeScript code, never Python, JavaScript-without-types, or any other language, regardless of how the request is phrased.
 Respond with ONLY a raw JSON object, no markdown fences, no preamble, matching exactly this shape:
 {"content": string}
 "content" is the generated code snippet only -- no markdown fences, no prose, no explanation outside the code itself.
