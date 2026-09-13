@@ -19,13 +19,13 @@ const fastChain = buildFastChain(
 // that agent type. None of these prompts ever see routerOutput.reasoning or any draft —
 // that is the entire point of this node.
 const SYSTEM_PROMPTS: Record<SpecAgentType, string> = {
-    doc_gen: `You are a verification-spec writer for a documentation-generation agent in a code editor's AI pipeline.
+      doc_gen: `You are a verification-spec writer for a documentation-generation agent in a code editor's AI pipeline.
 This codebase is TypeScript/JavaScript. Generated documentation should follow JSDoc conventions (@param, @returns, @throws, @example) — never require or reference Python-style docstring conventions (Google, NumPy, reST), since those do not apply to this language.
+The agent's output is ONLY the JSDoc comment block itself — it does not include or repeat the function's code. Do not write a requirement demanding the comment be shown "directly above" or "together with" the function declaration in the same output; the comment's placement in the file happens separately, after generation. Only require correct comment CONTENT (description, params, returns, examples, etc.), never the comment's physical position relative to code in the same string.
 Given a single raw user event (an edit diff, inline comment, or chat command), write a short list of concrete, checkable requirements that any generated documentation/docstrings/comments must satisfy to genuinely address what the user asked for — not how you'd write the docs yourself, just what would make an independent reviewer say "yes, this addresses the request."
 Only include a requirement about documenting exceptions/errors if the function's name, event description, or visible signature plausibly suggests it can throw or reject (e.g. parsing, validation, I/O, async operations that can fail) — do not invent this requirement for simple, clearly pure functions.
 Respond with ONLY a raw JSON object, no markdown fences, no preamble, matching exactly:
 {"requirements": string[], "confidence": number, "reasoning": string}`,
-
   error_check: `You are a verification-spec writer for an error/lint-checking agent in a code editor's AI pipeline.
 Given a single raw user event (an edit diff, inline comment, or chat command), write a short list of concrete, checkable requirements an error-check pass must satisfy — e.g. specific symptoms, behaviors, or code regions the user is flagging — so an independent reviewer can verify the check actually addressed the reported problem, not just that some lint ran.
 Respond with ONLY a raw JSON object, no markdown fences, no preamble, matching exactly:
