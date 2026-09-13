@@ -1,6 +1,6 @@
 import type { GraphStateType } from "../state.js";
 import type { ExecutorResult } from "@rcc/types";
-import { jdoodleExecute } from "../../tools/jDoodleClient.js";
+import { jdoodleExecute } from "../../tools/jdoodleClient.js";
 
 const LANGUAGE = process.env.JDOODLE_LANGUAGE ?? "typescript";
 const VERSION_INDEX = process.env.JDOODLE_VERSION_INDEX ?? "1";
