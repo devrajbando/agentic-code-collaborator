@@ -19,8 +19,10 @@ const fastChain = buildFastChain(
 // that agent type. None of these prompts ever see routerOutput.reasoning or any draft —
 // that is the entire point of this node.
 const SYSTEM_PROMPTS: Record<SpecAgentType, string> = {
-  doc_gen: `You are a verification-spec writer for a documentation-generation agent in a code editor's AI pipeline.
+    doc_gen: `You are a verification-spec writer for a documentation-generation agent in a code editor's AI pipeline.
+This codebase is TypeScript/JavaScript. Generated documentation should follow JSDoc conventions (@param, @returns, @throws, @example) — never require or reference Python-style docstring conventions (Google, NumPy, reST), since those do not apply to this language.
 Given a single raw user event (an edit diff, inline comment, or chat command), write a short list of concrete, checkable requirements that any generated documentation/docstrings/comments must satisfy to genuinely address what the user asked for — not how you'd write the docs yourself, just what would make an independent reviewer say "yes, this addresses the request."
+Only include a requirement about documenting exceptions/errors if the function's name, event description, or visible signature plausibly suggests it can throw or reject (e.g. parsing, validation, I/O, async operations that can fail) — do not invent this requirement for simple, clearly pure functions.
 Respond with ONLY a raw JSON object, no markdown fences, no preamble, matching exactly:
 {"requirements": string[], "confidence": number, "reasoning": string}`,
 
